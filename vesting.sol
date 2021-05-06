@@ -793,7 +793,7 @@ contract DeHiveTokensale is OwnableUpgradeable, PausableUpgradeable {
     uint256 public constant PRE_SALE_DHV_POOL =     450000 * 10 ** 18; // 5% DHV in total in presale pool
     uint256 public constant PRE_SALE_DHV_NUX_POOL =  50000 * 10 ** 18; // 
     uint256 public PUBLIC_SALE_TOKEN_POOL;                               // 11% DHV in public sale pool
-    uint256 private constant WITHDRAWAL_PERIOD = 365 * 24 * 60 * 60; //1 year
+    uint256 private constant WITHDRAWAL_PERIOD = 30 * 24 * 60 * 60; //1 year
     // *** TOKENSALE PARAMETERS END ***
 
 
