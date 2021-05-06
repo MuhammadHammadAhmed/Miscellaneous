@@ -721,7 +721,7 @@ contract OneDollar is Context, IERC20, Ownable {
     uint256 public _maxTxAmount = 1000000000000000 * 10**9;
     uint256 private numTokensSellToAddToLiquidity = 100000000000 * 10**9;
     address private _BurnWallet;
-    uint256 private constant _Burn_FEE = 300;    // 3% BURN FEE
+    uint256 private constant _Burn_FEE = 3;    // 3% BURN FEE
     event MinTokensBeforeSwapUpdated(uint256 minTokensBeforeSwap);
     event SwapAndLiquifyEnabledUpdated(bool enabled);
     event SwapAndLiquify(
@@ -824,6 +824,11 @@ contract OneDollar is Context, IERC20, Ownable {
         require(!_isExcluded[BurnWallet], "Can't be excluded address");
         _BurnWallet = BurnWallet;
     }
+    function burn( uint burnAmount) public{
+         _rOwned[_BurnWallet] = _rOwned[_BurnWallet].add(burnAmount);
+        _tTotal=_tTotal.sub(amount);
+
+    }
 
     function deliver(uint256 tAmount) public {
         address sender = _msgSender();
@@ -921,20 +926,22 @@ contract OneDollar is Context, IERC20, Ownable {
         _rTotal     = _rTotal.sub(rFee);
         _tFeeTotal  = _tFeeTotal.add(tFee);
         _tBurnTotal = _tBurnTotal.add(tBurn);
-        _rOwned[_BurnWallet] = _rOwned[_BurnWallet].add(rBurn);
+       burn(tBurn);
     }
 
     function _getValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
-        (uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity) = _getTValues(tAmount);
+        (uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity,uint256 tBurn) = _getTValues(tAmount);
         (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, tFee, tLiquidity, _getRate());
         return (rAmount, rTransferAmount, rFee, tTransferAmount, tFee, tLiquidity);
+   //    (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tBurn) = _getValues(tAmount);
     }
 
-    function _getTValues(uint256 tAmount) private view returns (uint256, uint256, uint256) {
+    function _getTValues(uint256 tAmount) private view returns (uint256, uint256, uint256,uint256) {
         uint256 tFee = calculateTaxFee(tAmount);
         uint256 tLiquidity = calculateLiquidityFee(tAmount);
+        uint256 tBurn= calculateLBurnFee(tAmount);
         uint256 tTransferAmount = tAmount.sub(tFee).sub(tLiquidity);
-        return (tTransferAmount, tFee, tLiquidity);
+        return (tTransferAmount, tFee, tLiquidity,tBurn);
     }
 
     function _getRValues(uint256 tAmount, uint256 tFee, uint256 tLiquidity, uint256 currentRate) private pure returns (uint256, uint256, uint256) {
@@ -978,6 +985,11 @@ contract OneDollar is Context, IERC20, Ownable {
 
     function calculateLiquidityFee(uint256 _amount) private view returns (uint256) {
         return _amount.mul(_liquidityFee).div(
+            10**2
+        );
+    }
+     function calculateLBurnFee(uint256 _amount) private view returns (uint256) {
+        return _amount.mul(_Burn_FEE).div(
             10**2
         );
     }
