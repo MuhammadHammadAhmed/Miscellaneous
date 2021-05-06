@@ -833,7 +833,7 @@ contract OneDollar is Context, IERC20, Ownable {
     function deliver(uint256 tAmount) public {
         address sender = _msgSender();
         require(!_isExcluded[sender], "Excluded addresses cannot call this function");
-        (uint256 rAmount,,,,,) = _getValues(tAmount);
+        (uint256 rAmount,,,,,,) = _getValues(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
         _rTotal = _rTotal.sub(rAmount);
         _tFeeTotal = _tFeeTotal.add(tAmount);
@@ -842,10 +842,10 @@ contract OneDollar is Context, IERC20, Ownable {
     function reflectionFromToken(uint256 tAmount, bool deductTransferFee) public view returns(uint256) {
         require(tAmount <= _tTotal, "Amount must be less than supply");
         if (!deductTransferFee) {
-            (uint256 rAmount,,,,,) = _getValues(tAmount);
+            (uint256 rAmount,,,,,,) = _getValues(tAmount);
             return rAmount;
         } else {
-            (,uint256 rTransferAmount,,,,) = _getValues(tAmount);
+            (,uint256 rTransferAmount,,,,,,) = _getValues(tAmount);
             return rTransferAmount;
         }
     }
@@ -880,7 +880,7 @@ contract OneDollar is Context, IERC20, Ownable {
     }
         function _transferBothExcluded(address sender, address recipient, uint256 tAmount) private {
         uint256 currentRate =  _getRate();
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tBurn) = _getValues(tAmount);
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee,uint256 liquidity, uint256 tBurn) = _getValues(tAmount);
         uint256 rBurn =  tBurn.mul(currentRate);
 
         _tOwned[sender] = _tOwned[sender].sub(tAmount);
@@ -929,10 +929,10 @@ contract OneDollar is Context, IERC20, Ownable {
        burn(tBurn);
     }
 
-    function _getValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
+    function _getValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, ,uint256) {
         (uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity,uint256 tBurn) = _getTValues(tAmount);
         (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, tFee, tLiquidity, _getRate());
-        return (rAmount, rTransferAmount, rFee, tTransferAmount, tFee, tLiquidity);
+        return (rAmount, rTransferAmount, rFee, tTransferAmount, tFee, tLiquidity,tburn);
    //    (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tBurn) = _getValues(tAmount);
     }
 
@@ -1157,7 +1157,7 @@ contract OneDollar is Context, IERC20, Ownable {
     }
      function _transferToExcluded(address sender, address recipient, uint256 tAmount) private {
         uint256 currentRate =  _getRate();
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tBurn) = _getValues(tAmount);
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee,uint liquidity, uint256 tBurn) = _getValues(tAmount);
         uint256 rBurn =  tBurn.mul(currentRate);
 
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
