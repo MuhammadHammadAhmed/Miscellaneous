@@ -775,7 +775,7 @@ contract DeHiveTokensale is OwnableUpgradeable, PausableUpgradeable {
     /**
      * EVENTS
      **/
-    event DHVPurchased(address indexed user, address indexed purchaseToken, uint256 dhvAmount);
+    event TokensPurchased(address indexed user, address indexed purchaseToken, uint256 dhvAmount);
     event TokensClaimed(address indexed user, uint256 dhvAmount);
 
     /**
@@ -784,7 +784,7 @@ contract DeHiveTokensale is OwnableUpgradeable, PausableUpgradeable {
 
     // *** TOKENSALE PARAMETERS START ***
     uint256 public constant PRECISION = 1000000; //Up to 0.000001
-    uint256 public constant PRE_SALE_START =    1616594400; //Mar 24 2021 14:00:00 GMT
+    uint256 public constant PRE_SALE_START =    1616594400; ////to change
     uint256 public constant PRE_SALE_END =      1616803140; //Mar 26 2021 23:59:00 GMT
 
     uint256 public constant PUBLIC_SALE_START = 1618408800; //Apr 14 2021 14:00:00 GMT
@@ -792,7 +792,7 @@ contract DeHiveTokensale is OwnableUpgradeable, PausableUpgradeable {
 
     uint256 public constant PRE_SALE_DHV_POOL =     450000 * 10 ** 18; // 5% DHV in total in presale pool
     uint256 public constant PRE_SALE_DHV_NUX_POOL =  50000 * 10 ** 18; // 
-    uint256 public PUBLIC_SALE_DHV_POOL;                               // 11% DHV in public sale pool
+    uint256 public PUBLIC_SALE_TOKEN_POOL;                               // 11% DHV in public sale pool
     uint256 private constant WITHDRAWAL_PERIOD = 365 * 24 * 60 * 60; //1 year
     // *** TOKENSALE PARAMETERS END ***
 
@@ -807,7 +807,7 @@ contract DeHiveTokensale is OwnableUpgradeable, PausableUpgradeable {
     // *** VESTING PARAMETERS START ***
 
     uint256 public vestingStart;
-    uint256 public constant vestingDuration = 305 days; //305 days - until Apr 30 2021 00:00:00 GMT
+    uint256 public constant vestingDuration = 30 days; //305 days - until Apr 30 2021 00:00:00 GMT
     
     // *** VESTING PARAMETERS END ***
     address public DHVToken;
@@ -880,24 +880,24 @@ contract DeHiveTokensale is OwnableUpgradeable, PausableUpgradeable {
     /**
      * @notice Initializes the contract with correct addresses settings
      * @param treasury Address of the DeHive protocol's treasury where funds from sale go to
-     * @param dhv DHVToken mainnet address
+     * @param token  Token mainnet address
      */
-    function initialize(address treasury, address dhv) public initializer {
+    function initialize(address treasury, address token) public initializer {
         require(treasury != address(0), "Zero address");
-        require(dhv != address(0), "Zero address");
+        require(token != address(0), "Zero address");
 
         __Ownable_init();
         __Pausable_init();
 
         _treasury = treasury;
-        DHVToken = dhv;
+        DHVToken = token;
 
         DAIToken = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
         USDTToken = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
         NUXToken = 0x89bD2E7e388fAB44AE88BEf4e1AD12b4F1E0911c;
         vestingStart = 0;
         maxTokensAmount = 49600 * (10 ** 18); // around 50 ETH 
-        PUBLIC_SALE_DHV_POOL = 1100000 * 10 ** 18; // 11% of sale pool
+        PUBLIC_SALE_TOKEN_POOL = 1100000 * 10 ** 18; // 11% of sale pool
     }
 
     /**
@@ -948,10 +948,10 @@ contract DeHiveTokensale is OwnableUpgradeable, PausableUpgradeable {
 
     /**
      * @notice Updates public sales pool maximum
-     * @param _publicPool New public pool DHV maximum value
+     * @param _publicPool New public pool TOKEN maximum value
      */
     function adminSetPublicPool(uint256 _publicPool) external onlyOwner {
-        PUBLIC_SALE_DHV_POOL = _publicPool;
+        PUBLIC_SALE_TOKEN_POOL = _publicPool;
     }
 
 
@@ -999,7 +999,7 @@ contract DeHiveTokensale is OwnableUpgradeable, PausableUpgradeable {
             require(purchasedPreSale.add(purchaseAmount) <= PRE_SALE_DHV_POOL, "Not enough DHV in presale pool");
             purchasedPreSale = purchasedPreSale.add(purchaseAmount);
         } else {
-            require(purchaseAmount <= publicSaleAvailableDHV(), "Not enough DHV in sale pool");
+            require(purchaseAmount <= publicSaleAvailableDHV(), "Not enough tOKEN in sale pool");
             purchasedPublicSale = purchasedPublicSale.add(purchaseAmount);
             purchasedPublic[_msgSender()] = purchasedPublic[_msgSender()].add(purchaseAmount);
         }
@@ -1007,7 +1007,7 @@ contract DeHiveTokensale is OwnableUpgradeable, PausableUpgradeable {
         purchased[_msgSender()] = purchased[_msgSender()].add(purchaseAmount);
         IERC20Upgradeable(ERC20token).safeTransferFrom(_msgSender(), _treasury, ERC20amount); // send ERC20 to Treasury
 
-        emit DHVPurchased(_msgSender(), ERC20token, purchaseAmount);
+        emit TokensPurchased(_msgSender(), ERC20token, purchaseAmount);
     }
 
     /**
@@ -1026,7 +1026,7 @@ contract DeHiveTokensale is OwnableUpgradeable, PausableUpgradeable {
         purchased[_msgSender()] = purchased[_msgSender()].add(purchaseAmount);
         IERC20Upgradeable(NUXToken).safeTransferFrom(_msgSender(), _treasury, nuxAmount);
 
-        emit DHVPurchased(_msgSender(), NUXToken, purchaseAmount);
+        emit TokensPurchased(_msgSender(), NUXToken, purchaseAmount);
     }
 
     /**
@@ -1055,7 +1055,7 @@ contract DeHiveTokensale is OwnableUpgradeable, PausableUpgradeable {
 
         payable(_treasury).transfer(msg.value);
 
-        emit DHVPurchased(_msgSender(), address(0), purchaseAmount);
+        emit TokensPurchased(_msgSender(), address(0), purchaseAmount);
     }
 
     /**
@@ -1064,7 +1064,7 @@ contract DeHiveTokensale is OwnableUpgradeable, PausableUpgradeable {
      * @return The amount of the token released.
      */
     function publicSaleAvailableDHV() public view returns(uint256) {
-        return PUBLIC_SALE_DHV_POOL.sub(purchasedPublicSale);
+        return PUBLIC_SALE_TOKEN_POOL.sub(purchasedPublicSale);
     }
 
 
