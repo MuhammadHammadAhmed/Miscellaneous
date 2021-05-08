@@ -783,17 +783,17 @@ contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
      **/
 
     // *** TOKENSALE PARAMETERS START ***
-    uint256 public constant PRECISION = 1000000; //Up to 0.000001
-    uint256 public constant PRE_SALE_START =    1616594400; ////to change
-    uint256 public constant PRE_SALE_END =      1616803140; //Mar 26 2021 23:59:00 GMT
+    uint256 public  PRECISION = 1000000; //Up to 0.000001
+    uint256 public  PRE_SALE_START =    1616594400; ////to change
+    uint256 public  PRE_SALE_END =      1616803140; //Mar 26 2021 23:59:00 GMT
 
-    uint256 public constant PUBLIC_SALE_START = 1618408800; //Apr 14 2021 14:00:00 GMT
-    uint256 public constant PUBLIC_SALE_END =   1618790340; //Apr 18 2021 23:59:00 GMT
+    uint256 public  PUBLIC_SALE_START = 1618408800; //Apr 14 2021 14:00:00 GMT
+    uint256 public  PUBLIC_SALE_END =   1618790340; //Apr 18 2021 23:59:00 GMT
 
-    uint256 public constant PRE_SALE_TOKEN_POOL =     450000 * 10 ** 18; // 5% TOKEN in total in presale pool
-    uint256 public constant PRE_SALE_TOKEN_NUX_POOL =  50000 * 10 ** 18; // 
+    uint256 public  PRE_SALE_TOKEN_POOL =     450000 * 10 ** 18; // 5% TOKEN in total in presale pool
+    uint256 public  PRE_SALE_TOKEN_NUX_POOL =  50000 * 10 ** 18; // 
     uint256 public PUBLIC_SALE_TOKEN_POOL;                               // 11% TOKEN in public sale pool
-    uint256 private constant WITHDRAWAL_PERIOD = 30 * 24 * 60 * 60; //1 year
+    uint256 private  WITHDRAWAL_PERIOD = 30 * 24 * 60 * 60; //1 year// add update function
     // *** TOKENSALE PARAMETERS END ***
 
 
@@ -991,7 +991,7 @@ contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
 
     }
      function updatePrecision(uint precision) external onlyOwner{
-         uint256 public constant PRECISION = precision; 
+          PRECISION = precision; 
     
     }
 
