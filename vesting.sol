@@ -767,7 +767,7 @@ interface IERC20Detailed {
     function decimals() external view returns (uint8);
 }
 
-contract DeHiveTokensale is OwnableUpgradeable, PausableUpgradeable {
+contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
 
     using SafeMathUpgradeable for uint256;
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -968,6 +968,32 @@ contract DeHiveTokensale is OwnableUpgradeable, PausableUpgradeable {
     function adminUnpause() external onlyOwner {
         _unpause();
     }
+    /*update token sale parameters*/
+
+    function updatePreSaleStart(uint date) external onlyOwner{
+     PRE_SALE_START =   date;
+
+
+    }
+    function updatePublicSaleStart(uint date) external onlyOwner{
+     PUBLIC_SALE_START =   date;
+
+
+    }
+        function updatePreSaleEnd(uint date) external onlyOwner{
+     PRE_SALE_END =   date;
+
+
+    }
+    function updatePublicSaleEnd(uint date) external onlyOwner{
+     PUBLIC_SALE_END =   date;
+
+
+    }
+     function updatePrecision(uint precision) external onlyOwner{
+         uint256 public constant PRECISION = precision; 
+    
+    }
 
     function adminAddPurchase(address _receiver, uint256 _amount) virtual external onlyOwner {
         purchased[_receiver] = purchased[_receiver].add(_amount);
@@ -983,51 +1009,52 @@ contract DeHiveTokensale is OwnableUpgradeable, PausableUpgradeable {
     receive() external virtual payable onlySale whenNotPaused {
         _purchaseTokenwithETH();
     }
-
+/*commenting redundant code starting here*/
     /**
      * @notice For purchase with allowed stablecoin (USDT and DAI)
      * @param ERC20token Address of the token to be paid in
      * @param ERC20amount Amount of the token to be paid in
      */
-    function purchaseTokenithERC20(address ERC20token, uint256 ERC20amount) external onlySale supportedCoin(ERC20token) whenNotPaused correctGas {
-        require(ERC20amount > 0, "Zero amount");
-        uint256 purchaseAmount = _calcPurchaseAmount(ERC20token, ERC20amount);
+    // function purchaseTokenithERC20(address ERC20token, uint256 ERC20amount) external onlySale supportedCoin(ERC20token) whenNotPaused correctGas {
+    //     require(ERC20amount > 0, "Zero amount");
+    //     uint256 purchaseAmount = _calcPurchaseAmount(ERC20token, ERC20amount);
 
-        _checkCapReached(purchaseAmount);
+    //     _checkCapReached(purchaseAmount);
         
-        if (_isPreSale()) {
-            require(purchasedPreSale.add(purchaseAmount) <= PRE_SALE_TOKEN_POOL, "Not enough Token in presale pool");
-            purchasedPreSale = purchasedPreSale.add(purchaseAmount);
-        } else {
-            require(purchaseAmount <= publicSaleAvailableToken(), "Not enough tOKEN in sale pool");
-            purchasedPublicSale = purchasedPublicSale.add(purchaseAmount);
-            purchasedPublic[_msgSender()] = purchasedPublic[_msgSender()].add(purchaseAmount);
-        }
+    //     if (_isPreSale()) {
+    //         require(purchasedPreSale.add(purchaseAmount) <= PRE_SALE_TOKEN_POOL, "Not enough Token in presale pool");
+    //         purchasedPreSale = purchasedPreSale.add(purchaseAmount);
+    //     } else {
+    //         require(purchaseAmount <= publicSaleAvailableToken(), "Not enough tOKEN in sale pool");
+    //         purchasedPublicSale = purchasedPublicSale.add(purchaseAmount);
+    //         purchasedPublic[_msgSender()] = purchasedPublic[_msgSender()].add(purchaseAmount);
+    //     }
             
-        purchased[_msgSender()] = purchased[_msgSender()].add(purchaseAmount);
-        IERC20Upgradeable(ERC20token).safeTransferFrom(_msgSender(), _treasury, ERC20amount); // send ERC20 to Treasury
+    //     purchased[_msgSender()] = purchased[_msgSender()].add(purchaseAmount);
+    //     IERC20Upgradeable(ERC20token).safeTransferFrom(_msgSender(), _treasury, ERC20amount); // send ERC20 to Treasury
 
-        emit TokensPurchased(_msgSender(), ERC20token, purchaseAmount);
-    }
+    //     emit TokensPurchased(_msgSender(), ERC20token, purchaseAmount);
+    // }
 
-    /**
-     * @notice For purchase with NUX token only. Available only for tokensale
-     * @param nuxAmount Amount of the NUX token
-     */
-    function purchaseTokenwithNUX(uint256 nuxAmount) external onlyPreSale whenNotPaused correctGas {
-        require(nuxAmount > 0, "Zero amount");
-        uint256 purchaseAmount = _calcPurchaseAmount(NUXToken, nuxAmount);
-        require(purchaseAmount.add(purchased[msg.sender]) <= maxTokensAmount, "Maximum allowed exceeded");
+    // /**
+    //  * @notice For purchase with NUX token only. Available only for tokensale
+    //  * @param nuxAmount Amount of the NUX token
+    //  */
+    // function purchaseTokenwithNUX(uint256 nuxAmount) external onlyPreSale whenNotPaused correctGas {
+    //     require(nuxAmount > 0, "Zero amount");
+    //     uint256 purchaseAmount = _calcPurchaseAmount(NUXToken, nuxAmount);
+    //     require(purchaseAmount.add(purchased[msg.sender]) <= maxTokensAmount, "Maximum allowed exceeded");
 
 
-        require(purchasedWithNUX.add(purchaseAmount) <= PRE_SALE_TOKEN_NUX_POOL, "Not enough Token in NUX pool");
-        purchasedWithNUX = purchasedWithNUX.add(purchaseAmount);
+    //     require(purchasedWithNUX.add(purchaseAmount) <= PRE_SALE_TOKEN_NUX_POOL, "Not enough Token in NUX pool");
+    //     purchasedWithNUX = purchasedWithNUX.add(purchaseAmount);
 
-        purchased[_msgSender()] = purchased[_msgSender()].add(purchaseAmount);
-        IERC20Upgradeable(NUXToken).safeTransferFrom(_msgSender(), _treasury, nuxAmount);
+    //     purchased[_msgSender()] = purchased[_msgSender()].add(purchaseAmount);
+    //     IERC20Upgradeable(NUXToken).safeTransferFrom(_msgSender(), _treasury, nuxAmount);
 
-        emit TokensPurchased(_msgSender(), NUXToken, purchaseAmount);
-    }
+    //     emit TokensPurchased(_msgSender(), NUXToken, purchaseAmount);
+    // }
+/*commenting redundant code stops here*/
 
     /**
      * @notice For purchase with ETH. ETH is left on the contract until withdrawn to treasury
