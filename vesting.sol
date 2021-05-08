@@ -994,6 +994,10 @@ contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
           PRECISION = precision; 
     
     }
+    function updateToken(address token) external onlyOwner{
+          _Token = token; 
+    
+    }
 
     function adminAddPurchase(address _receiver, uint256 _amount) virtual external onlyOwner {
         purchased[_receiver] = purchased[_receiver].add(_amount);
@@ -1138,6 +1142,7 @@ contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
     /**
      * @notice Transfers available for claim vested tokens to the user.
      */
+     
     function claim() external {
         require(vestingStart!=0, "Vesting start is not set");
         require(_isPublicSaleOver(), "Not allowed to claim now");
@@ -1166,7 +1171,10 @@ contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
     function claimable(address _user) public view returns (uint256) {
         return _vestedAmount(_user).sub(_claimed[_user]);
     }
-
+    /* get token balance*/
+function getTokenBalance(address _user) public view returns (uint256) {
+        uint tokens= purchased[_user].sub(_claimed[_user]);
+    }
     /**
      * @dev Calculates the amount that has already vested.
      * @param _user Address of the user who purchased tokens
