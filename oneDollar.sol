@@ -752,7 +752,7 @@ contract OneDollar is Context, IERC20, Ownable {
         _isExcludedFromFee[address(this)] = true;
         
         _BurnWallet = BurnWallet;
-        emit Transfer(address(0), p_msgSender()), _tTotal);
+        emit Transfer(address(0), _msgSender(), _tTotal);
     }
 
     function name() public view returns (string memory) {
