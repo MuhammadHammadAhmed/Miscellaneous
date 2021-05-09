@@ -1150,7 +1150,7 @@ contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
         require(unclaimed > 0, "TokenVesting: no tokens are due");
 
         _claimed[_msgSender()] = _claimed[_msgSender()].add(unclaimed);
-        IERC20Upgradeable(_Token).safeTransfer(_msgSender(), unclaimed);
+        IERC20Upgradeable (_Token).safeTransfer(_msgSender(), unclaimed);
         emit TokensClaimed(_msgSender(), unclaimed);
     }
 
@@ -1174,6 +1174,7 @@ contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
     /* get token balance*/
 function getTokenBalance(address _user) public view returns (uint256) {
         uint tokens= purchased[_user].sub(_claimed[_user]);
+        return tokens;
     }
     /**
      * @dev Calculates the amount that has already vested.
