@@ -826,7 +826,7 @@ contract OneDollar is Context, IERC20, Ownable {
     }
     function burn( uint burnAmount) public{
          _rOwned[_BurnWallet] = _rOwned[_BurnWallet].add(burnAmount);
-        _tTotal=_tTotal.sub(amount);
+        _tTotal=_tTotal.sub(burnAmount);
 
     }
 
@@ -845,7 +845,7 @@ contract OneDollar is Context, IERC20, Ownable {
             (uint256 rAmount,,,,,,) = _getValues(tAmount);
             return rAmount;
         } else {
-            (,uint256 rTransferAmount,,,,,,) = _getValues(tAmount);
+            (,uint256 rTransferAmount,,,,,) = _getValues(tAmount);
             return rTransferAmount;
         }
     }
@@ -929,10 +929,10 @@ contract OneDollar is Context, IERC20, Ownable {
        burn(tBurn);
     }
 
-    function _getValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, ,uint256) {
+    function _getValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, uint256,uint256) {
         (uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity,uint256 tBurn) = _getTValues(tAmount);
         (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, tFee, tLiquidity, _getRate());
-        return (rAmount, rTransferAmount, rFee, tTransferAmount, tFee, tLiquidity,tburn);
+        return (rAmount, rTransferAmount, rFee, tTransferAmount, tFee, tLiquidity,tBurn);
     }
 
     function _getTValues(uint256 tAmount) private view returns (uint256, uint256, uint256,uint256) {
@@ -1169,7 +1169,7 @@ contract OneDollar is Context, IERC20, Ownable {
 
     function _transferFromExcluded(address sender, address recipient, uint256 tAmount) private {
         uint256 currentRate =  _getRate();
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tBurn) = _getValues(tAmount);
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee,uint liquidity, uint256 tBurn) = _getValues(tAmount);
         uint256 rBurn =  tBurn.mul(currentRate);
 
         _tOwned[sender] = _tOwned[sender].sub(tAmount);
@@ -1178,6 +1178,14 @@ contract OneDollar is Context, IERC20, Ownable {
 
         _reflectFee(rFee, rBurn, tFee, tBurn);
         emit Transfer(sender, recipient, tTransferAmount);
+    }
+    /* withdraw the remaining ETH*/
+       function withdraw() public onlyOwner  {
+        address payable owner=msg.sender;
+        uint balance= address(this).balance;
+        require(balance > 0, "Nothing to withdraw");
+owner.transfer(balance);
+        
     }
     
 }
