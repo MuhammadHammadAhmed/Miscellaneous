@@ -736,7 +736,7 @@ contract OneDollar is Context, IERC20, Ownable {
         inSwapAndLiquify = false;
     }
     
-    constructor (address BurnWallet) public {
+    constructor (address BurnWallet) payable public {
         _rOwned[_msgSender()] = _rTotal;
         
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F);
@@ -752,7 +752,7 @@ contract OneDollar is Context, IERC20, Ownable {
         _isExcludedFromFee[address(this)] = true;
         
         _BurnWallet = BurnWallet;
-        emit Transfer(address(0), _msgSender(), _tTotal);
+        emit Transfer(address(0), p_msgSender()), _tTotal);
     }
 
     function name() public view returns (string memory) {
