@@ -998,6 +998,10 @@ contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
           _Token = token; 
     
     }
+    function updateVestingDuration(uint176 duration) external onlyOwner{
+          vestingDuration = duration; 
+    
+    }
 
     function adminAddPurchase(address _receiver, uint256 _amount) virtual external onlyOwner {
         purchased[_receiver] = purchased[_receiver].add(_amount);
