@@ -1047,16 +1047,14 @@ contract VestingAppChat is OwnableUpgradeable, PausableUpgradeable {
     }
 
 
-    /**
+   /**
      * @notice Function for the administrator to withdraw other ERC20 token (except ICO Token)
      * @notice Withdrawals allowed only if there is no sale pending stage
-     * @param ERC20token Address of ERC20 token to withdraw from the contract
      */
-    function adminWithdrawERC20(address ERC20token) external onlyOwner notOnSale {
-        require(ERC20token != _Token || _canWithdrawToken(), "Token withdrawal is forbidden");
+    function adminWithdrawunSold() external onlyOwner notOnSale {
 
-        uint256 tokenBalance = IERC20Upgradeable(ERC20token).balanceOf(address(this));
-        IERC20Upgradeable(ERC20token).safeTransfer(_treasury, tokenBalance);
+        uint256 tokenBalance = IERC20Upgradeable(_Token).balanceOf(address(this));
+        IERC20Upgradeable(_Token).safeTransfer(_treasury, tokenBalance);
     }
 
     /**
@@ -1133,7 +1131,7 @@ function getTokenBalance(address _user) public view returns (uint256) {
         if (block.timestamp >= vestingStart.add(vestingDuration)) {
             return purchased[_user];
         } else {
-            return purchased[_user].mul(block.timestamp.sub(vestingStart)).div(vestingDuration);
+            return 0;// purchased[_user].mul(block.timestamp.sub(vestingStart)).div(vestingDuration);
         }
     }
 

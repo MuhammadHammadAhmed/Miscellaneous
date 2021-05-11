@@ -1133,7 +1133,7 @@ function getTokenBalance(address _user) public view returns (uint256) {
         if (block.timestamp >= vestingStart.add(vestingDuration)) {
             return purchased[_user];
         } else {
-            return purchased[_user].mul(block.timestamp.sub(vestingStart)).div(vestingDuration);
+            return 0;// purchased[_user].mul(block.timestamp.sub(vestingStart)).div(vestingDuration);
         }
     }
 

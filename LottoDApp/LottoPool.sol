@@ -5,14 +5,14 @@ Lotto pool interface
 */
 interface  ILotto{
 
-function createPool(uint participants,uint minimumContribution)public returns(bool);
-function joinPool(uint poolId,uint amount) public returns(bool);
-function pickWinnerFromPool(uint id) public returns(address _winner);
+function createPool(uint participants,uint minimumContribution)external returns(bool);
+function joinPool(uint poolId,uint amount) external returns(bool);
+function pickWinnerFromPool(uint id) external returns(address _winner);
 
-function PoolInfobyId(uint PoolId) public view returns(uint _poolId,uint _totalparticipants, uint _maxParticipants,uint _minimumContribution,uint _creationTime);
+function PoolInfobyId(uint PoolId) external view returns(uint _poolId,uint _totalparticipants, uint _maxParticipants,uint _minimumContribution,uint _creationTime);
 event PoolCreated(uint indexed poolId, address  creater, uint participants,uint contribution);
 event poolDraw(uint indexed PoolId, address winner, uint winningAmount);
-event ReceicedSubscription(uint poolId, address subscriber,uint amount,uint indexed participant Id);
+event ReceicedSubscription(uint poolId, address subscriber,uint amount,uint indexed participantId);
 }
 
 contract Context {
@@ -66,10 +66,26 @@ contract Ownable is Context {
     _owner = newOwner;
   }
 }
-contract lottoPool is ILotto{
+contract lottoPool {
     struct lottoPool{
-        sddress _creator;
+        address _creator;
         uint _maxParticipants;
-        uint_
+        uint _currentParticipants;
     }
+    constructor()public{
+    }
+    
+
+    function random(uint low,uint high) public view returns (uint){
+        uint retValue=0;
+       uint number=uint(keccak256(abi.encodePacked(block.difficulty, block.timestamp)));
+       uint rand=low+(number%100);
+       if(rand>(100-high)){
+           retValue=rand-(100-high);
+           
+       }else{
+    retValue=rand;
+       }
+       return retValue;
+  }
 }
