@@ -784,11 +784,10 @@ contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
 
     // *** TOKENSALE PARAMETERS START ***
     uint256 public  PRECISION = 1000000; //Up to 0.000001
-    uint256 public  PRE_SALE_START =    1616594400; ////to change
-    uint256 public  PRE_SALE_END =      1616803140; //Mar 26 2021 23:59:00 GMT
+    
 
-    uint256 public  PUBLIC_SALE_START = 1618408800; //Apr 14 2021 14:00:00 GMT
-    uint256 public  PUBLIC_SALE_END =   1618790340; //Apr 18 2021 23:59:00 GMT
+    uint256 public  PUBLIC_SALE_START; //Apr 14 2021 14:00:00 GMT
+    uint256 public  PUBLIC_SALE_END ; //Apr 18 2021 23:59:00 GMT
 
    // uint256 public  PRE_SALE_TOKEN_NUX_POOL =  50000 * 10 ** 18; // 
     uint256 public PUBLIC_SALE_TOKEN_POOL;                               // 11% TOKEN in public sale pool
@@ -965,18 +964,18 @@ contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
     }
     /*update token sale parameters*/
 
-    function updatePreSaleStart(uint date) external onlyOwner{
-     PRE_SALE_START =   date;
+    // function updatePreSaleStart(uint date) external onlyOwner{
+    //  PRE_SALE_START =   date;
 
 
-    }
+    // }
     function updatePublicSaleStart(uint date) external onlyOwner{
      PUBLIC_SALE_START =   date;
 
 
     }
-        function updatePreSaleEnd(uint date) external onlyOwner{
-     PRE_SALE_END =   date;
+     function updateVestingStart(uint date) external onlyOwner{
+     vestingStart =   date;
 
 
     }
@@ -1147,9 +1146,9 @@ function getTokenBalance(address _user) public view returns (uint256) {
      * @dev Checks if presale stage is on-going.
      * @return True is presale is active
      */
-    function _isPreSale() virtual internal view returns (bool) {
-        return (block.timestamp >= PRE_SALE_START && block.timestamp < PRE_SALE_END);
-    }
+    // function _isPreSale() virtual internal view returns (bool) {
+    //     return (block.timestamp >= PRE_SALE_START && block.timestamp < PRE_SALE_END);
+    // }
 
     /**
      * @dev Checks if public sale stage is on-going.
