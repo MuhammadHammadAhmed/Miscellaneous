@@ -1,5 +1,5 @@
 /**
- *Submitted for verification at Etherscan.io on 2021-04-13
+ *Submitted for verification at __
 */
 
 // SPDX-License-Identifier: MIT
@@ -38,22 +38,8 @@ library AddressUpgradeable {
         return size > 0;
     }
 
-    /**
-     * @dev Replacement for Solidity's `transfer`: sends `amount` wei to
-     * `recipient`, forwarding all available gas and reverting on errors.
-     *
-     * https://eips.ethereum.org/EIPS/eip-1884[EIP1884] increases the gas cost
-     * of certain opcodes, possibly making contracts go over the 2300 gas limit
-     * imposed by `transfer`, making them unable to receive funds via
-     * `transfer`. {sendValue} removes this limitation.
-     *
-     * https://diligence.consensys.net/posts/2019/09/stop-using-soliditys-transfer-now/[Learn more].
-     *
-     * IMPORTANT: because control is transferred to `recipient`, care must be
-     * taken to not create reentrancy vulnerabilities. Consider using
-     * {ReentrancyGuard} or the
-     * https://solidity.readthedocs.io/en/v0.5.11/security-considerations.html#use-the-checks-effects-interactions-pattern[checks-effects-interactions pattern].
-     */
+    
+     
     function sendValue(address payable recipient, uint256 amount) internal {
         require(address(this).balance >= amount, "Address: insufficient balance");
 
@@ -100,7 +86,7 @@ library AddressUpgradeable {
      *
      * Requirements:
      *
-     * - the calling contract must have an ETH balance of at least `value`.
+     * - the calling contract must have an bnb balance of at least `value`.
      * - the called Solidity function must be `payable`.
      *
      * _Available since v3.1._
@@ -239,7 +225,6 @@ abstract contract ContextUpgradeable is Initializable {
     }
 
     function _msgData() internal view virtual returns (bytes memory) {
-        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
         return msg.data;
     }
     uint256[50] private __gap;
@@ -767,7 +752,7 @@ interface IERC20Detailed {
     function decimals() external view returns (uint8);
 }
 
-contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
+contract VestingONED is OwnableUpgradeable, PausableUpgradeable {
 
     using SafeMathUpgradeable for uint256;
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -815,7 +800,7 @@ contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
 
  
     uint256 public purchasedPublicSale;
-    uint256 public ETHRate;
+    uint256 public Rate;
     mapping (address => uint256) public rates;
 
     address private _treasury;
@@ -906,14 +891,12 @@ contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
 
     /**
      * @notice Sets the rate for the chosen token based on the contracts precision
-     * @param _token ERC20 token address or zero address for ETH
-     * @param _rate Exchange rate based on precision (e.g. _rate = PRECISION corresponds to 1:1)
+     
      */
-    function adminSetRates(address _token, uint256 _rate) external onlyOwner {
-        if (_token == address(0))
-            ETHRate = _rate;
-        else
-            rates[_token] = _rate;
+    function adminSetRates( uint256 _rate) external onlyOwner {
+        
+            Rate = _rate;
+        
     }
 
     /**
@@ -1006,23 +989,23 @@ contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
      ***/
 
     /**
-     * @notice For purchase with ETH
+     * @notice For purchase with BNB
      */
     receive() external virtual payable onlySale whenNotPaused {
-        _purchaseTokenwithETH();
+        _purchaseTokenwithBNB();
     }
 
 
     /**
-     * @notice For purchase with ETH. ETH is left on the contract until withdrawn to treasury
+     * @notice For purchase with BNB. BNB is left on the contract until withdrawn to treasury
      */
-    function purchaseTokenwithETH() external payable onlySale whenNotPaused {
-        require(msg.value > 0, "No ETH sent");
-        _purchaseTokenwithETH();
+    function purchaseTokenwithBNB() external payable onlySale whenNotPaused {
+        require(msg.value > 0, "No BNB sent");
+        _purchaseTokenwithBNB();
     }
 
-    function _purchaseTokenwithETH() correctGas private {
-        uint256 purchaseAmount = _calcEthPurchaseAmount(msg.value);
+    function _purchaseTokenwithBNB() correctGas private {
+        uint256 purchaseAmount = _calcBNBPurchaseAmount(msg.value);
         
         _checkCapReached(purchaseAmount);
 
@@ -1050,17 +1033,15 @@ contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
     /**
      * @notice Function for the administrator to withdraw other ERC20 token (except ICO Token)
      * @notice Withdrawals allowed only if there is no sale pending stage
-     * @param ERC20token Address of ERC20 token to withdraw from the contract
      */
-    function adminWithdrawERC20(address ERC20token) external onlyOwner notOnSale {
-        require(ERC20token != _Token || _canWithdrawToken(), "Token withdrawal is forbidden");
+    function adminWithdrawunSold() external onlyOwner notOnSale {
 
-        uint256 tokenBalance = IERC20Upgradeable(ERC20token).balanceOf(address(this));
-        IERC20Upgradeable(ERC20token).safeTransfer(_treasury, tokenBalance);
+        uint256 tokenBalance = IERC20Upgradeable(_Token).balanceOf(address(this));
+        IERC20Upgradeable(_Token).safeTransfer(_treasury, tokenBalance);
     }
 
     /**
-     * @notice Function for the administrator to withdraw ETH for refunds
+     * @notice Function for the administrator to withdraw ENB for refunds
      * @notice Withdrawals allowed only if there is no sale pending stage
      */
     function adminWithdraw() external onlyOwner notOnSale {
@@ -1071,16 +1052,12 @@ contract VestingTokensale is OwnableUpgradeable, PausableUpgradeable {
     }
 
     /**
-     * @notice Returns Token amount for 1 external token
-     * @param _token External toke (DAI, USDT, NUX, 0 address for ETH)
+     get Rate for Token
      */
-    function rateForToken(address _token) external view returns(uint256) {
-        if (_token == address(0)) {
-            return _calcEthPurchaseAmount(10**18);
-        }
-        else {
-            return _calcPurchaseAmount(_token, 10**( uint256(IERC20Detailed(_token).decimals()) ));
-        }
+    function rateForToken() external view returns(uint256) {
+       
+            return _calcBNBPurchaseAmount(10**18);
+       
     }
 
     /***
@@ -1192,12 +1169,12 @@ function getTokenBalance(address _user) public view returns (uint256) {
     }
 
     /**
-     * @dev Calculates Token amount based on rate and ETH amount.
-     * @param _amount ETH amount to convert to Token
+     * @dev Calculates Token amount based on rate and BNB amount.
+     * @param _amount BNB amount to convert to Token
      * @return Token amount
      */
-    function _calcEthPurchaseAmount(uint256 _amount) private view returns (uint256) {
-        uint256 purchaseAmount = _amount.mul(ETHRate).div(PRECISION);
+    function _calcBNBPurchaseAmount(uint256 _amount) private view returns (uint256) {
+        uint256 purchaseAmount = _amount.mul(Rate).div(PRECISION);
         require(purchaseAmount > 0, "Rates not set");
         return purchaseAmount;
     }
