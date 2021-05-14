@@ -247,13 +247,15 @@ return true;
     function random(uint low,uint high) public view returns (uint){
         uint retValue=0;
        uint number=uint(keccak256(abi.encodePacked(block.difficulty, block.timestamp)));
+       
        uint rand=low+(number%100);
-       if(rand>(100-high)){
-           retValue=rand-(100-high);
+       retValue=rand.mul(high).div(99);
+    //   if(rand>(100-high)){
+    //       retValue=rand-(100-high);
            
-       }else{
-    retValue=rand;
-       }
+    //   }else{
+    // retValue=rand;
+     //  }
        return retValue;
   }
 }
