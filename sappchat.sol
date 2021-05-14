@@ -2,7 +2,7 @@
  *Submitted for verification at Etherscan.io on 2021-02-25
 */
 
-pragma solidity ^0.8.0;
+pragma   solidity >= 0.6.12 <0.8.0;
 
 interface IERC20 {
     
@@ -148,7 +148,7 @@ contract Ownable is Context {
      * Can only be called by the current owner.
      */
     function transferOwnership(address newOwner) public virtual onlyOwner {
-        require(newOwner != address(0), "Ownable: new owner is the zero address");
+        require(newOwner != address(0), "BEP20:Ownable: new owner is the zero address");
         emit OwnershipTransferred(_owner, newOwner);
         _owner = newOwner;
     }
