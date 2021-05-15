@@ -1,5 +1,8 @@
 
 pragma solidity ^0.6.12;
+
+//https://etherscan.io/token/0x816ce692734e5ad638926a66c2879f0614132f01
+
 /*
 Lotto pool interface
 */
@@ -26,6 +29,7 @@ contract Context {
     this; 
     return msg.data;
   }
+  
 }
 library SafeMath {
     /**
@@ -215,34 +219,54 @@ contract lottoGame  {
         uint _participantcounter;
         uint _maxParticipants;
         uint _minimumContribution;
-        uint _currentParticipants;
-        mapping(uint=>address) participants;
+     //   uint _currentParticipants;
+        uint _timestamp;
+        mapping(uint=>address) _participants;
     }
     // state variables
     mapping  (uint=>LottoPool) public poolById;
     mapping (uint=>uint) public fundsbyPool;
-    uint public poolCounter=1;
+    uint public poolCounter=0;
     uint[] public pools;
     constructor()public{
     }
+    modifier onlyNewPartipant(uint poolId,address newparticipant){
+        LottoPool memory pool=poolById[poolId];
+        uint participants= pool._participantcounter;
+        for(uint i=0; i<=participants;i++ ){
+            require(poolById[poolId]._participants[i]!=newparticipant,"paticipant already Exist in Pool" );
+        }
+        _;
+        }
     function createPool(uint participants,uint minimumContribution)external returns(bool){
-        
-
-poolById[poolCounter]=LottoPool(poolCounter,msg.sender,0,participants,minimumContribution,0);
+       
+poolCounter=poolCounter.add(1);
+poolById[poolCounter]=LottoPool(poolCounter,msg.sender,0,participants,minimumContribution,block.timestamp);
+//poolById[poolCounter].participants[0]=address(0);
+pools.push(poolCounter);
 return true;
 }
-function joinPool(uint poolId,uint amount) external returns(bool){
+/* join pool, with contribution amount*/
+function joinPool(uint poolId,uint amount) external onlyNewPartipant(poolId,msg.sender) returns(bool){
     LottoPool memory pool=poolById[poolId];
-    require(amount==pool._minimumContribution,"the contribution amount should be the exact match");
-        require(pool._currentParticipants<pool._maxParticipants,"the maximum number of participants reached");
-    require(pool._poolId!=0,"Invalid PoolId");
-    pool._currentParticipants=pool._currentParticipants.add(1);
-        pool._participantcounter=pool._participantcounter.add(1);
+    require(amount==poolById[poolId]._minimumContribution,"the contribution amount should be the exact match");
+        require(poolById[poolId]._participantcounter<pool._maxParticipants,"the maximum number of participants reached");
+    require(poolById[poolId]._poolId!=0,"Invalid PoolId");
+    uint  newcount =poolById[poolId]._participantcounter.add(1);
+        poolById[poolId]._participantcounter= newcount;
+        poolById[poolId]._participants[newcount]=msg.sender;
+        fundsbyPool[poolId]=fundsbyPool[poolId].add(amount);
         
 
     
-    
 return true;
+}
+function getPools() public view returns(uint[] memory){
+    return pools;
+}
+
+function getParticipant(uint poolId,uint participantId) public view returns(address){
+return poolById[poolId]._participants[participantId];
 }
 
     function random(uint low,uint high) public view returns (uint){
