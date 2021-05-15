@@ -220,6 +220,7 @@ contract lottoGame  {
     }
     // state variables
     mapping  (uint=>LottoPool) public poolById;
+    mapping (uint=>uint) public fundsbyPool;
     uint public poolCounter=1;
     uint[] public pools;
     constructor()public{
