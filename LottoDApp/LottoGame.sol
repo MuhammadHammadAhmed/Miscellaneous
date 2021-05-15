@@ -265,6 +265,10 @@ function getPools() public view returns(uint[] memory){
     return pools;
 }
 
+function getPoolbyId(uint poolId) public view returns(uint _currentParticipants,uint _maxParticipants,uint _contributionAmount,uint timestamp){
+
+return (poolById[poolId]._participantcounter,poolById[poolId]._maxParticipants,poolById[poolId]._minimumContribution,poolById[poolId]._timestamp);
+}
 function getParticipant(uint poolId,uint participantId) public view returns(address){
 return poolById[poolId]._participants[participantId];
 }
