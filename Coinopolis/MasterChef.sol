@@ -1292,7 +1292,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
         }
         if (_amount > 0) {
             user.amount = user.amount.sub(_amount);
-            pool.lpToken.safeTransfer(address(msg.sender), _amount);
+            IERC20(pool.lpToken).transfer(address(msg.sender), _amount);
         }
         user.rewardDebt = user.amount.mul(pool.accCCASHPerShare).div(1e12);
         emit Withdraw(msg.sender, _pid, _amount);
