@@ -2,7 +2,34 @@
 pragma solidity ^0.6.12;
 
 //https://etherscan.io/token/0x816ce692734e5ad638926a66c2879f0614132f01
+//https://testnet.bscscan.com/address/0xebbf72de4999e4a4ff7d3bd63532fd19d5a87171#code
 
+
+interface IERC20 {
+    
+    function totalSupply() external view returns (uint256);
+
+    
+    function balanceOf(address account) external view returns (uint256);
+
+    
+    function transfer(address recipient, uint256 amount) external returns (bool);
+
+    
+    function allowance(address owner, address spender) external view returns (uint256);
+
+  
+    function approve(address spender, uint256 amount) external returns (bool);
+
+   
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+
+    
+    event Transfer(address indexed from, address indexed to, uint256 value);
+
+   
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+}
 /*
 Lotto pool interface
 */
@@ -223,9 +250,14 @@ contract lottoGame  {
         uint _timestamp;
         mapping(uint=>address) _participants;
     }
+    //events
+    event PoolCreated(uint indexed poolId, address  creater, uint participants,uint contribution);
+event poolDraw(uint indexed PoolId, address winner, uint winningAmount);
+event ReceicedSubscription(uint poolId, address subscriber,uint amount,uint indexed participantId);
     // state variables
     mapping  (uint=>LottoPool) public poolById;
     mapping (uint=>uint) public fundsbyPool;
+    IERC20 _token;
     uint public poolCounter=0;
     uint[] public pools;
     constructor()public{
@@ -244,6 +276,7 @@ poolCounter=poolCounter.add(1);
 poolById[poolCounter]=LottoPool(poolCounter,msg.sender,0,participants,minimumContribution,block.timestamp);
 //poolById[poolCounter].participants[0]=address(0);
 pools.push(poolCounter);
+ emit PoolCreated( poolCounter,   msg.sender, participants,minimumContribution);
 return true;
 }
 /* join pool, with contribution amount*/
@@ -257,17 +290,38 @@ function joinPool(uint poolId,uint amount) external onlyNewPartipant(poolId,msg.
         poolById[poolId]._participants[newcount]=msg.sender;
         fundsbyPool[poolId]=fundsbyPool[poolId].add(amount);
         
+emit ReceicedSubscription( poolId,  msg.sender, amount, newcount);
 
-    
+
 return true;
 }
+function drawWinner(uint poolId) public returns(bool){
+    uint winnerNumber= random(1,poolById[poolId]._participantcounter);
+    address winnerAddress= getParticipant(poolId,winnerNumber);
+    uint reward= fundsbyPool[poolId];
+   // bool success =  _token.transfer(winnerAddress,reward);
+   pools=removeItem(poolId,pools);
+    emit poolDraw(winnerNumber,winnerAddress , reward);
+
+    return true;
+}
+ function removeItem(uint item, uint[] memory array) public pure returns(uint[] memory){
+       
+
+        for (uint i=0;i<array.length-1;i++){
+            if(array[i]==item){
+              delete  array [i];
+            }
+
+            return array;
+        }
 function getPools() public view returns(uint[] memory){
     return pools;
 }
 
-function getPoolbyId(uint poolId) public view returns(uint _currentParticipants,uint _maxParticipants,uint _contributionAmount,uint timestamp){
+function getPoolbyId(uint poolId) public view returns(uint _poolId,uint _currentParticipants,uint _maxParticipants,uint _contributionAmount,uint timestamp){
 
-return (poolById[poolId]._participantcounter,poolById[poolId]._maxParticipants,poolById[poolId]._minimumContribution,poolById[poolId]._timestamp);
+return (poolId,poolById[poolId]._participantcounter,poolById[poolId]._maxParticipants,poolById[poolId]._minimumContribution,poolById[poolId]._timestamp);
 }
 function getParticipant(uint poolId,uint participantId) public view returns(address){
 return poolById[poolId]._participants[participantId];
