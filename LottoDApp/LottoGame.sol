@@ -253,14 +253,16 @@ contract lottoGame  {
     //events
     event PoolCreated(uint indexed poolId, address  creater, uint participants,uint contribution);
 event poolDraw(uint indexed PoolId, address winner, uint winningAmount);
-event ReceicedSubscription(uint poolId, address subscriber,uint amount,uint indexed participantId);
+event ReceivedSubscription(uint poolId, address subscriber,uint amount,uint indexed participantId);
     // state variables
     mapping  (uint=>LottoPool) public poolById;
     mapping (uint=>uint) public fundsbyPool;
-    IERC20 _token;
+    IERC20 _Token;
     uint public poolCounter=0;
     uint[] public pools;
-    constructor()public{
+    constructor(address token)public{
+        _Token= IERC20(token);
+        
     }
     modifier onlyNewPartipant(uint poolId,address newparticipant){
         LottoPool memory pool=poolById[poolId];
@@ -281,29 +283,34 @@ return true;
 }
 /* join pool, with contribution amount*/
 function joinPool(uint poolId,uint amount) external onlyNewPartipant(poolId,msg.sender) returns(bool){
+    
     LottoPool memory pool=poolById[poolId];
+    require(pool._creator!=address(0),"Pool not exist");
+    address participant= msg.sender;
     require(amount==poolById[poolId]._minimumContribution,"the contribution amount should be the exact match");
         require(poolById[poolId]._participantcounter<pool._maxParticipants,"the maximum number of participants reached");
     require(poolById[poolId]._poolId!=0,"Invalid PoolId");
     uint  newcount =poolById[poolId]._participantcounter.add(1);
         poolById[poolId]._participantcounter= newcount;
-        poolById[poolId]._participants[newcount]=msg.sender;
+        poolById[poolId]._participants[newcount]=participant;
         fundsbyPool[poolId]=fundsbyPool[poolId].add(amount);
+        _Token.transferFrom(participant,address(this),amount);
         
-emit ReceicedSubscription( poolId,  msg.sender, amount, newcount);
+emit ReceivedSubscription( poolId,  msg.sender, amount, newcount);
 
 
 return true;
 }
 function drawWinner(uint poolId) public returns(bool){
-    uint winnerNumber= random(1,poolById[poolId]._participantcounter);
+    uint winnerNumber= random(0,poolById[poolId]._participantcounter);
     address winnerAddress= getParticipant(poolId,winnerNumber);
     uint reward= fundsbyPool[poolId];
-   // bool success =  _token.transfer(winnerAddress,reward);
+    bool success =  _Token.transfer(winnerAddress,reward);
+   delete poolById[poolId];
    pools=removeItem(poolId,pools);
     emit poolDraw(winnerNumber,winnerAddress , reward);
 
-    return true;
+    return success;
 }
  function removeItem(uint item, uint[] memory array) public pure returns(uint[] memory){
        
@@ -312,9 +319,10 @@ function drawWinner(uint poolId) public returns(bool){
             if(array[i]==item){
               delete  array [i];
             }
-
+}
             return array;
-        }
+        
+ }
 function getPools() public view returns(uint[] memory){
     return pools;
 }
@@ -339,6 +347,7 @@ return poolById[poolId]._participants[participantId];
     //   }else{
     // retValue=rand;
      //  }
+     retValue=(retValue>0)?retValue:1;
        return retValue;
   }
 }
