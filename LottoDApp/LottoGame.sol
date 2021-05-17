@@ -257,11 +257,14 @@ event ReceivedSubscription(uint poolId, address subscriber,uint amount,uint inde
     // state variables
     mapping  (uint=>LottoPool) public poolById;
     mapping (uint=>uint) public fundsbyPool;
-    IERC20 _Token;
+    IERC20 public _Token;
     uint public poolCounter=0;
     uint[] public pools;
+     uint public duration;  
     constructor(address token)public{
         _Token= IERC20(token);
+        duration = 1 days ;
+       
         
     }
     modifier onlyNewPartipant(uint poolId,address newparticipant){
