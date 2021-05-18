@@ -2,7 +2,7 @@
  *Submitted for verification at BscScan.com on 2021-04-29
 */
 
-pragma solidity ^0.6.12;
+pragma solidity 0.6.12;
 
 // SPDX-License-Identifier: MIT
 
@@ -810,7 +810,7 @@ contract OneDollar is Context, IERC20, Ownable {
         return _isExcluded[account];
     }
 
-    function totalFees() public view returns (uint256) {
+    function totalTaxFees() public view returns (uint256) {
         return _tFeeTotal;
     }
     function totalBurnFee() public view returns (uint256) {
@@ -837,6 +837,8 @@ contract OneDollar is Context, IERC20, Ownable {
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
         _rTotal = _rTotal.sub(rAmount);
         _tFeeTotal = _tFeeTotal.add(tAmount);
+             emit  Transfer(sender,  address(this),rAmount);
+
     }
 
     function reflectionFromToken(uint256 tAmount, bool deductTransferFee) public view returns(uint256) {
@@ -927,6 +929,7 @@ contract OneDollar is Context, IERC20, Ownable {
         _tFeeTotal  = _tFeeTotal.add(tFee);
         _tBurnTotal = _tBurnTotal.add(tBurn);
        burn(tBurn);
+     emit  Transfer(address(this),  address(0),  tBurn);
     }
 
     function _getValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, uint256,uint256) {
@@ -943,11 +946,13 @@ contract OneDollar is Context, IERC20, Ownable {
         return (tTransferAmount, tFee, tLiquidity,tBurn);
     }
 
-    function _getRValues(uint256 tAmount, uint256 tFee, uint256 tLiquidity, uint256 currentRate) private pure returns (uint256, uint256, uint256) {
+    function _getRValues(uint256 tAmount, uint256 tFee, uint256 tLiquidity, uint256 currentRate) private view returns (uint256, uint256, uint256) {
         uint256 rAmount = tAmount.mul(currentRate);
+        uint rBurn = calculateLBurnFee(tAmount).mul(currentRate);
+
         uint256 rFee = tFee.mul(currentRate);
         uint256 rLiquidity = tLiquidity.mul(currentRate);
-        uint256 rTransferAmount = rAmount.sub(rFee).sub(rLiquidity);
+        uint256 rTransferAmount = rAmount.sub(rFee).sub(rLiquidity).sub(rBurn);
         return (rAmount, rTransferAmount, rFee);
     }
 
@@ -968,13 +973,7 @@ contract OneDollar is Context, IERC20, Ownable {
         return (rSupply, tSupply);
     }
     
-    function _takeLiquidity(uint256 tLiquidity) private {
-        uint256 currentRate =  _getRate();
-        uint256 rLiquidity = tLiquidity.mul(currentRate);
-        _rOwned[address(this)] = _rOwned[address(this)].add(rLiquidity);
-        if(_isExcluded[address(this)])
-            _tOwned[address(this)] = _tOwned[address(this)].add(tLiquidity);
-    }
+   
     
     function calculateTaxFee(uint256 _amount) private view returns (uint256) {
         return _amount.mul(_taxFee).div(

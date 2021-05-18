@@ -1161,9 +1161,9 @@ contract MasterChef is Ownable, ReentrancyGuard {
     event UpdateEmissionRate(address indexed user, uint256 goosePerBlock);
 
     constructor(
-        CCash _ccash
+        address _ccash
     ) public {
-        ccash = _ccash;
+        ccash = CCash(_ccash);
         devaddr = msg.sender;
         feeAddress = msg.sender;
         ccashPerBlock = 2000000000000000000;
@@ -1174,14 +1174,14 @@ contract MasterChef is Ownable, ReentrancyGuard {
         return poolInfo.length;
     }
 
-    mapping(IERC20 => bool) public poolExistence;
-    modifier nonDuplicated(IERC20 _lpToken) {
+    mapping(address => bool) public poolExistence;
+    modifier nonDuplicated(address _lpToken) {
         require(poolExistence[_lpToken] == false, "nonDuplicated: duplicated");
         _;
     }
 
     // Add a new lp to the pool. Can only be called by the owner.
-    function add(uint256 _allocPoint, IERC20 _lpToken, uint16 _depositFeeBP, bool _withUpdate) public onlyOwner nonDuplicated(_lpToken) {
+    function add(uint256 _allocPoint, address _lpToken, uint16 _depositFeeBP, bool _withUpdate) public onlyOwner nonDuplicated(_lpToken) {
         require(_depositFeeBP <= 10000, "add: invalid deposit fee basis points");
         if (_withUpdate) {
             massUpdatePools();
@@ -1190,7 +1190,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
         totalAllocPoint = totalAllocPoint.add(_allocPoint);
         poolExistence[_lpToken] = true;
         poolInfo.push(PoolInfo({
-        lpToken : _lpToken,
+        lpToken :IERC20(_lpToken),
         allocPoint : _allocPoint,
         lastRewardBlock : lastRewardBlock,
         accCCASHPerShare : 0,
@@ -1267,10 +1267,10 @@ contract MasterChef is Ownable, ReentrancyGuard {
             }
         }
         if (_amount > 0) {
-            pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
+            pool.lpToken.transferFrom(address(msg.sender), address(this), _amount);
             if (pool.depositFeeBP > 0) {
                 uint256 depositFee = _amount.mul(pool.depositFeeBP).div(10000);
-                pool.lpToken.safeTransfer(feeAddress, depositFee);
+                pool.lpToken.transfer(feeAddress, depositFee);
                 user.amount = user.amount.add(_amount).sub(depositFee);
             } else {
                 user.amount = user.amount.add(_amount);
