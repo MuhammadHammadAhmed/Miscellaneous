@@ -312,6 +312,7 @@ function drawWinner(uint poolId) public returns(bool){
    delete poolById[poolId];
    pools=removeItem(poolId,pools);
     emit poolDraw(winnerNumber,winnerAddress , reward);
+    delete fundsbyPool[poolId];
 
     return success;
 }
