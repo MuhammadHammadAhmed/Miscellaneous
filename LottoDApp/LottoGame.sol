@@ -308,7 +308,7 @@ function drawWinner(uint poolId) public returns(bool){
     uint winnerNumber= random(0,poolById[poolId]._participantcounter);
     address winnerAddress= getParticipant(poolId,winnerNumber);
     uint reward= fundsbyPool[poolId];
-    bool success =  _Token.transfer(winnerAddress,reward);
+   bool success =  _Token.transfer(winnerAddress,reward);
    delete poolById[poolId];
    pools=removeItem(poolId,pools);
     emit poolDraw(winnerNumber,winnerAddress , reward);
@@ -319,7 +319,7 @@ function drawWinner(uint poolId) public returns(bool){
  function removeItem(uint item, uint[] memory array) public pure returns(uint[] memory){
        
 
-        for (uint i=0;i<array.length-1;i++){
+        for (uint i=0;i<=array.length-1;i++){
             if(array[i]==item){
               delete  array [i];
             }
