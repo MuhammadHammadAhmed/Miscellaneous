@@ -4,8 +4,9 @@ import "hardhat/console.sol";
 
 contract Escrow
 {
-    address payable buyer;
-    address payable seller;
+    address  payable public buyer;
+    address  payable public seller;
+    address payable public contractOwner;
     
     
     struct item
@@ -17,7 +18,8 @@ contract Escrow
         string date;
     }
     item product;
-    
+    mapping(address=>uint) public deposits;
+    uint public escrowfee=400;// fee in basis points
     uint balance;//escrow balance amount
     uint start;//starting time
     uint end;//ending time
@@ -25,7 +27,12 @@ contract Escrow
     event notify(string notification);//notification to the sender
     
     enum state{AWAITING_BUYER_PAYMENT,AWAITING_DELIVERY,AWAITING_FUND_RELEASE,COMPLETE}//state of the smart contract
-    state current;
+    
+    //AWAITING_BUYER_PAYMENT - initial state
+    //AWAITING_DELIVERY- amount received but awaiting 
+    //AWAITING_FUND_RELEASE-  waiting for delivery confirmation
+    //COMPLETE - process is completed
+    state public  current;
 
     bool public buyerOK;
     bool public sellerOK;
@@ -37,6 +44,7 @@ contract Escrow
         current=state.AWAITING_BUYER_PAYMENT;
     }    
     
+    // update the product details
     function b_Product_details(string memory _b_name,uint units,string memory _date,uint p_p_u) public
     {
         product.b_name=_b_name;
@@ -61,7 +69,7 @@ contract Escrow
     {
         return address(this).balance;
     }
-    
+    // incase seller deny service, refund the buyer and mark the process complete
     function seller_deny_service() public
     {
         require(msg.sender==seller,"You cannot hack my contract...");
@@ -76,7 +84,7 @@ contract Escrow
             require(current==state.AWAITING_DELIVERY);
                     sellerOK=true;
     }
-    
+    //- confirms the satisfactory receipt of product
      function b_delivery_received() public payable
     {
         require(msg.sender==buyer);
@@ -107,22 +115,26 @@ contract Escrow
         }
         current=state.COMPLETE;
     }
+   //- can be called via constructor or directly from frontend*/ 
+  function deposit() public  payable {
+     uint256 amount = msg.value;
+   require(msg.sender==buyer,"Can only be accessed by the buyer");
+            require(current==state.AWAITING_BUYER_PAYMENT,"Payment has already been made...");
+                require(msg.value>product.total,"Entered amount is less that required amount...");
+                    balance=msg.value;
+                    start=block.timestamp;
+                    current=state.AWAITING_DELIVERY;
+                    emit notify("Buyer has deposited the required amount in the Escrow account");  
     
-  function deposit() public onlyBuyer payable {
-    require(currentState == State.AWAITING_FUNDS_RELEASE);
-    uint256 amount = msg.value;
-
-
-    // these lines calculate the fee, update the amount and send the fee to the contract owner
-    // make sure you're not vulnerable to overflow
-    uint256 fee = (amount / 100) * 4;
-    payable(contractOwner).transfer(fee); // transfer 4% to the contract owner
+    uint256 fee = (amount *escrowfee )/ 1000;
+    (contractOwner).transfer(fee); // transfer fee to the contract owner
     amount -= fee; // substract the fee from the amount that is going to be saved
 
 
     deposits[seller] = deposits[seller] + amount; 
-    currentState = State.AWAITING_CLAIM;
+  //  current = state.AWAITING_CLAIM;
 }
   
 }
 
+ 
