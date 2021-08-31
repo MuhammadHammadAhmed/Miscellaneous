@@ -37,10 +37,12 @@ contract Escrow
     bool public buyerOK;
     bool public sellerOK;
     
-    constructor (address payable _seller) public//buyer is the deployer 
+    constructor (address payable _seller,address payable _buyer) public//contract owner is the deployer 
     {
-        buyer=msg.sender;
+        buyer=_buyer;
         seller=_seller;
+        contractOwner= msg.sender;
+        
         current=state.AWAITING_BUYER_PAYMENT;
     }    
     
@@ -73,21 +75,21 @@ contract Escrow
     function seller_deny_service() public
     {
         require(msg.sender==seller,"You cannot hack my contract...");
-        require(current==state.AWAITING_DELIVERY);
+        require(current==state.AWAITING_DELIVERY,"It is not the right time for this action");
             buyer.transfer(address(this).balance);
             current=state.COMPLETE;
     }
     
     function seller_send_product() public payable
     {
-        require(msg.sender==seller,"Can be accessed only by sender");
+        require(msg.sender==seller,"Can be accessed only by seller");
             require(current==state.AWAITING_DELIVERY);
                     sellerOK=true;
     }
     //- confirms the satisfactory receipt of product
      function b_delivery_received() public payable
     {
-        require(msg.sender==buyer);
+        require(msg.sender==buyer," only Buyer can call this function");
         require(current==state.AWAITING_DELIVERY);
             buyerOK=true;
         current=state.AWAITING_FUND_RELEASE;
@@ -97,21 +99,25 @@ contract Escrow
     
     function release_fund()private
     {
+             uint amount =address(this).balance;
             if(buyerOK&&sellerOK)
-                seller.transfer((address(this).balance));
+                seller.transfer(amount);
+                deposits[seller] = deposits[seller] - amount; 
             current=state.COMPLETE;
     }
     function withdraw_amount() public 
     {
+        uint amount =address(this).balance;
         end=block.timestamp;
         require(current==state.AWAITING_DELIVERY);
         require(msg.sender==buyer);
         if(buyerOK==false&&sellerOK==true)
-            seller.transfer(address(this).balance);
+            seller.transfer(amount);
         else if(buyerOK&&!sellerOK&&end>start+172800)//time exceeds 30 days after the buyer has deposited in the escrow contract
         {
             require(address(this).balance!=0,"Already money transferred");
             buyer.transfer(address(this).balance);
+            deposits[seller] = deposits[seller] - amount; 
         }
         current=state.COMPLETE;
     }
