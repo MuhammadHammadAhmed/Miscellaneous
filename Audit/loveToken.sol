@@ -112,6 +112,7 @@ interface IST20 {
 }
 
 contract ST20 is Ownable, IST20 {
+     using SafeMath for uint256;
     mapping (address => uint256) private _balances;
     mapping (address => mapping (address => uint256)) private _allowances;
     uint256 private _totalSupply;
@@ -180,15 +181,16 @@ contract ST20 is Ownable, IST20 {
         _beforeTokenTransfer(sender, recipient, amount);
         uint256 senderBalance = _balances[sender];
         require(senderBalance >= amount, "Token: transfer amount exceeds balance");
-        _balances[sender] = senderBalance - amount;
-        _balances[recipient] += amount;
+        _balances[sender] = senderBalance.sub(amount);
+        _balances[recipient] =_balances[recipient].add( amount);
         emit Transfer(sender, recipient, amount);
     }
     function _mint(address account, uint256 amount) internal virtual {
         require(account != address(0), "Token: mint to the zero address");
         _beforeTokenTransfer(address(0), account, amount);
-        _totalSupply += amount;
-        _balances[account] += amount;
+        _totalSupply = _totalSupply.add( amount);
+     
+         _balances[account] =_balances[account].add( amount);
         emit Transfer(address(0), account, amount);
     }
     function _burn(address account, uint256 amount) internal virtual {
@@ -196,8 +198,8 @@ contract ST20 is Ownable, IST20 {
         _beforeTokenTransfer(account, address(0), amount);
         uint256 accountBalance = _balances[account];
         require(accountBalance >= amount, "Token: burn amount exceeds balance");
-        _balances[account] = accountBalance - amount;
-        _totalSupply -= amount;
+        _balances[account] = accountBalance.sub(amount);
+        _totalSupply =_totalSupply.sub( amount);
         emit Transfer(account, address(0), amount);
     }
     function _approve(address owner, address spender, uint256 amount) internal virtual {
@@ -220,6 +222,7 @@ abstract contract ServicePayer {
 }
 
 contract ST_Basic_Token is ST20, ServicePayer {
+    using SafeMath for uint256;
     constructor (
         string memory name,
         string memory symbol,
