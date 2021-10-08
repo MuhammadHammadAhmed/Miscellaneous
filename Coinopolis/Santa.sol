@@ -235,11 +235,11 @@ contract DividendDistributor is IDividendDistributor {
 
     struct Share {
         uint256 amount;
-        uint256 totalExcluded;
+        uint256 totalExcluded;// excluded dividend
         uint256 totalRealised;
     }
-
-    IBEP20 BUSD = IBEP20(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56);
+//TODO update to main net addresses
+    IBEP20 BUSD = IBEP20(0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee);
     address WBNB = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
     IDEXRouter router;
 
@@ -251,7 +251,7 @@ contract DividendDistributor is IDividendDistributor {
 
     uint256 public totalShares;
     uint256 public totalDividends;
-    uint256 public totalDistributed;
+    uint256 public totalDistributed;// to be shown in UI
     uint256 public dividendsPerShare;
     uint256 public dividendsPerShareAccuracyFactor = 10 ** 36;
 
@@ -366,7 +366,9 @@ contract DividendDistributor is IDividendDistributor {
     function claimDividend() external {
         distributeDividend(msg.sender);
     }
-
+/*
+returns the  unpaid earnings
+*/
     function getUnpaidEarnings(address shareholder) public view returns (uint256) {
         if(shares[shareholder].amount == 0){ return 0; }
 
@@ -394,7 +396,7 @@ contract DividendDistributor is IDividendDistributor {
     }
 }
 
-contract EverGrow is IBEP20, Auth {
+contract SantaCoin is IBEP20, Auth {
     using SafeMath for uint256;
 
     uint256 public constant MASK = type(uint128).max;
@@ -404,8 +406,8 @@ contract EverGrow is IBEP20, Auth {
     address ZERO = 0x0000000000000000000000000000000000000000;
     address DEAD_NON_CHECKSUM = 0x000000000000000000000000000000000000dEaD;
 
-    string constant _name = "EverGrow Coin";
-    string constant _symbol = "EGC";
+    string constant _name = "Santa Coin";
+    string constant _symbol = "Santa";
     uint8 constant _decimals = 9;
 
     uint256 _totalSupply = 1_000_000_000_000_000 * (10 ** _decimals);
@@ -461,7 +463,7 @@ contract EverGrow is IBEP20, Auth {
     modifier swapping() { inSwap = true; _; inSwap = false; }
 
     constructor (
-        address _dexRouter
+        address _dexRouter, address _marketingAddress
     ) Auth(msg.sender) {
         router = IDEXRouter(_dexRouter);
         pair = IDEXFactory(router.factory()).createPair(WBNB, address(this));
@@ -478,7 +480,7 @@ contract EverGrow is IBEP20, Auth {
         buyBacker[msg.sender] = true;
 
         autoLiquidityReceiver = msg.sender;
-        marketingFeeReceiver = msg.sender;
+        marketingFeeReceiver = _marketingAddress;// update to 0x27F1D191adf620B78D69bb574C360FB0529Fc004
 
         approve(_dexRouter, _totalSupply);
         approve(address(pair), _totalSupply);
