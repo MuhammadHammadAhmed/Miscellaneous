@@ -240,7 +240,7 @@ contract DividendDistributor is IDividendDistributor {
     }
 //TODO update to main net addresses
     IBEP20 BUSD = IBEP20(0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee);
-    address WBNB = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
+    address WBNB = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
     IDEXRouter router;
 
     address[] shareholders;
@@ -274,7 +274,7 @@ contract DividendDistributor is IDividendDistributor {
     constructor (address _router) {
         router = _router != address(0)
         ? IDEXRouter(_router)
-        : IDEXRouter(0x10ED43C718714eb63d5aA57B78B54704E256024E);
+        : IDEXRouter(0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3);//todo change it
         _token = msg.sender;
     }
 
