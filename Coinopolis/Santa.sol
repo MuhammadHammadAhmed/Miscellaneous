@@ -1,3 +1,6 @@
+/**
+ *Submitted for verification at BscScan.com on 2021-10-08
+*/
 
 pragma solidity ^0.8.0;
 
@@ -274,7 +277,7 @@ contract DividendDistributor is IDividendDistributor {
     constructor (address _router) {
         router = _router != address(0)
         ? IDEXRouter(_router)
-        : IDEXRouter(0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3);//todo change it
+        : IDEXRouter(0x10ED43C718714eb63d5aA57B78B54704E256024E);
         _token = msg.sender;
     }
 
@@ -298,7 +301,7 @@ contract DividendDistributor is IDividendDistributor {
         shares[shareholder].amount = amount;
         shares[shareholder].totalExcluded = getCumulativeDividends(shares[shareholder].amount);
     }
-//swap BUSD against BNB
+
     function deposit() external payable override onlyToken {
         uint256 balanceBefore = BUSD.balanceOf(address(this));
 
@@ -349,7 +352,7 @@ contract DividendDistributor is IDividendDistributor {
         return shareholderClaims[shareholder] + minPeriod < block.timestamp
         && getUnpaidEarnings(shareholder) > minDistribution;
     }
-// distributes dividend
+
     function distributeDividend(address shareholder) internal {
         if(shares[shareholder].amount == 0){ return; }
 
@@ -398,10 +401,10 @@ returns the  unpaid earnings
 
 contract SantaCoin is IBEP20, Auth {
     using SafeMath for uint256;
-//todo - UPDATE  these addresses
+
     uint256 public constant MASK = type(uint128).max;
-    address BUSD = 0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee;
-    address public WBNB = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
+    address BUSD = 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56;
+    address public WBNB = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
     address DEAD = 0x000000000000000000000000000000000000dEaD;
     address ZERO = 0x0000000000000000000000000000000000000000;
     address DEAD_NON_CHECKSUM = 0x000000000000000000000000000000000000dEaD;
@@ -463,10 +466,11 @@ contract SantaCoin is IBEP20, Auth {
     modifier swapping() { inSwap = true; _; inSwap = false; }
 
     constructor (
-        address _dexRouter, address _marketingAddress
+        address _dexRouter, address _marketingAddress, address _wbnb
     ) Auth(msg.sender) {
         router = IDEXRouter(_dexRouter);
-        pair = IDEXFactory(router.factory()).createPair(WBNB, address(this));
+        WBNB=_wbnb;
+        pair = IDEXFactory(router.factory()).createPair(_wbnb, address(this));
         _allowances[address(this)][address(router)] = _totalSupply;
         WBNB = router.WETH();
         distributor = new DividendDistributor(_dexRouter);
@@ -486,6 +490,10 @@ contract SantaCoin is IBEP20, Auth {
         approve(address(pair), _totalSupply);
         _balances[msg.sender] = _totalSupply;
         emit Transfer(address(0), msg.sender, _totalSupply);
+    }
+    //todo- function to update addresses
+    function updateAddresses(address _wbnb, address _busd)public{
+
     }
 
     receive() external payable { }
@@ -526,8 +534,8 @@ contract SantaCoin is IBEP20, Auth {
 
         checkTxLimit(sender, amount);
         //
-        if(shouldSwapBack()){ swapBack(); }// from token to BNB- and deposit to dividend contract then process
-        if(shouldAutoBuyback()){ triggerAutoBuyback(); }// from BNB to token
+        if(shouldSwapBack()){ swapBack(); }
+        if(shouldAutoBuyback()){ triggerAutoBuyback(); }
 
         //        if(!launched() && recipient == pair){ require(_balances[sender] > 0); launch(); }
 
@@ -595,7 +603,7 @@ contract SantaCoin is IBEP20, Auth {
         && swapEnabled
         && _balances[address(this)] >= swapThreshold;
     }
-    //-for  receiving  BNB against token and deposits in dividend contract
+
     function swapBack() internal swapping {
         uint256 dynamicLiquidityFee = isOverLiquified(targetLiquidity, targetLiquidityDenominator) ? 0 : liquidityFee;
         uint256 amountToLiquify = swapThreshold.mul(dynamicLiquidityFee).div(totalFee).div(2);
@@ -666,7 +674,7 @@ contract SantaCoin is IBEP20, Auth {
         autoBuybackAccumulator = autoBuybackAccumulator.add(autoBuybackAmount);
         if(autoBuybackAccumulator > autoBuybackCap){ autoBuybackEnabled = false; }
     }
-// buy tokens with bnb
+
     function buyTokens(uint256 amount, address to) internal swapping {
         address[] memory path = new address[](2);
         path[0] = WBNB;
